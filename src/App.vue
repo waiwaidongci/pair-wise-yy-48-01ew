@@ -31,6 +31,9 @@ const items = [
         <div class="side-status">
           <div><span class="status-dot" :class="{ locked: store.locked }" />{{ store.locked ? '基线已签字锁定' : '协同编辑中' }}</div>
           <small>版本 R{{ store.revision }} · {{ store.validations.length }} 项校验提示</small>
+          <small v-if="store.pendingBatchCount || store.openConflictCount" class="batch-line">
+            <v-icon icon="mdi-sync" size="11" /> 待合并 {{ store.pendingBatchCount }} · 待核对 {{ store.openConflictCount }}
+          </small>
         </div>
       </template>
     </v-navigation-drawer>
@@ -59,6 +62,7 @@ const items = [
 .side-status { margin: 12px; padding: 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; color: #dce6e9; background: rgba(255,255,255,.04); }
 .side-status div { font-size: 11px; font-weight: 700; }
 .side-status small { display: block; margin-top: 6px; color: #93a7ad; font-size: 9px; }
+.side-status .batch-line { display: flex; align-items: center; gap: 4px; color: #e6b877; }
 .status-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: #59b58a; }
 .status-dot.locked { background: #d79a45; }
 .app-bar { border-bottom: 1px solid #e0e5e5; background: white; }

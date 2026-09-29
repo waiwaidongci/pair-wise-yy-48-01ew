@@ -29,6 +29,7 @@ const warningCount = computed(() => store.validations.filter((item) => item.seve
       <article><span>启用规则</span><strong>{{ store.rules.filter((rule) => rule.enabled).length }}</strong><small>{{ store.rules.length }} 条矩阵关系</small></article>
       <article><span>阻断错误</span><strong class="error">{{ errorCount }}</strong><small>签字前必须处理</small></article>
       <article><span>审阅警告</span><strong class="warning">{{ warningCount }}</strong><small>跨区和重复关系</small></article>
+      <article><span>待合并批次</span><strong :class="{ warning: store.pendingBatchCount }">{{ store.pendingBatchCount }}</strong><small>{{ store.openConflictCount }} 项待核对 · 回网合并</small></article>
     </div>
 
     <div class="overview-grid">
@@ -58,7 +59,7 @@ const warningCount = computed(() => store.validations.filter((item) => item.seve
 
 <style scoped>
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.metric-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; margin-bottom: 14px; }
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap: 12px; margin-bottom: 14px; }
 .metric-grid article { padding: 16px; border: 1px solid #dde3e3; border-radius: 10px; background: white; }
 .metric-grid span, .metric-grid small { display: block; color: #758187; font-size: 12px; }
 .metric-grid strong { display: block; margin: 7px 0; color: #293e45; font-size: 28px; }

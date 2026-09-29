@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useLinkageStore } from '../stores/linkage'
+import { useLinkageStore, type BatchStatus } from '../stores/linkage'
 
 const store = useLinkageStore()
 const query = ref('')
@@ -17,6 +17,13 @@ const rows = computed(() => store.rules.filter((rule) => {
   const action = store.devices.find((device) => device.id === rule.actionId)
   return (!showOnlyEnabled.value || rule.enabled) && (!query.value || `${rule.id}${trigger?.name}${action?.name}${rule.interlock}`.includes(query.value))
 }))
+
+const batchColorMap: Record<BatchStatus, string> = {
+  待合并: 'primary', 已合并: 'success', 待核对: 'warning', 已核对: 'success', 已失效: 'error', 合并失败: 'error', 已回滚: 'info',
+}
+function ruleBatch(ruleId: string) {
+  return store.batchTouchesRule(ruleId)
+}
 </script>
 
 <template>
@@ -46,7 +53,7 @@ const rows = computed(() => store.rules.filter((rule) => {
     <div class="panel table-wrap">
       <v-data-table v-model="selectedIds" :items="rows" item-value="id" show-select density="compact" :items-per-page="12">
         <thead>
-          <tr><th></th><th>规则</th><th>触发点位</th><th>动作点位</th><th>延时</th><th>互锁条件</th><th>优先级</th><th>抑制条件</th><th>启用</th><th>冲突</th></tr>
+          <tr><th></th><th>规则</th><th>触发点位</th><th>动作点位</th><th>延时</th><th>互锁条件</th><th>优先级</th><th>抑制条件</th><th>启用</th><th>批次</th><th>冲突</th></tr>
         </thead>
         <tbody>
           <tr v-for="rule in rows" :key="rule.id" :class="{ 'row-error': store.validations.some((item) => item.severity === '错误' && item.ruleIds.includes(rule.id)) }">
@@ -59,6 +66,10 @@ const rows = computed(() => store.rules.filter((rule) => {
             <td><v-select :model-value="rule.priority" :items="[1,2,3]" density="compact" hide-details style="width:82px" @update:model-value="store.updateRule(rule.id, { priority: Number($event) as 1|2|3 })" /></td>
             <td>{{ rule.suppression }}</td>
             <td><v-switch :model-value="rule.enabled" color="primary" hide-details density="compact" @update:model-value="store.updateRule(rule.id, { enabled: Boolean($event) })" /></td>
+            <td>
+              <v-chip v-if="ruleBatch(rule.id)" size="x-small" :color="batchColorMap[ruleBatch(rule.id)!.status]" variant="tonal">{{ ruleBatch(rule.id)!.code }} · {{ ruleBatch(rule.id)!.status }}</v-chip>
+              <span v-else class="muted">—</span>
+            </td>
             <td><v-chip v-if="store.validations.some((item) => item.ruleIds.includes(rule.id))" size="x-small" color="error" variant="tonal">需处理</v-chip><span v-else class="muted">—</span></td>
           </tr>
         </tbody>

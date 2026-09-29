@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useLinkageStore, type Device, type DeviceType } from '../stores/linkage'
+import { useLinkageStore, type Device, type DeviceType, type BatchStatus } from '../stores/linkage'
 
 const store = useLinkageStore()
 const query = ref('')
@@ -10,6 +10,16 @@ const form = ref<Device>({ id: '', name: '', type: '感烟探测器', floor: '1F
 const types: DeviceType[] = ['感烟探测器', '感温探测器', '手动报警按钮', '输入模块', '输出模块', '排烟风机', '防火卷帘', '消防广播', '电梯']
 
 const filtered = computed(() => store.devices.filter((item) => (floor.value === '全部' || item.floor === floor.value) && `${item.id}${item.name}${item.address}`.includes(query.value)))
+
+const batchColorMap: Record<BatchStatus, string> = {
+  待合并: 'primary', 已合并: 'success', 待核对: 'warning', 已核对: 'success', 已失效: 'error', 合并失败: 'error', 已回滚: 'info',
+}
+function batchColor(status: BatchStatus) {
+  return batchColorMap[status]
+}
+function deviceBatch(deviceId: string) {
+  return store.batchTouchesDevice(deviceId)
+}
 
 function addDevice() {
   if (!form.value.id || !form.value.name || !form.value.address) return
@@ -35,7 +45,7 @@ function addDevice() {
 
     <div class="panel">
       <v-table hover>
-        <thead><tr><th>点位编号</th><th>设备名称</th><th>类型</th><th>楼层 / 分区</th><th>回路地址</th><th>联动关系</th><th>状态</th></tr></thead>
+        <thead><tr><th>点位编号</th><th>设备名称</th><th>类型</th><th>楼层 / 分区</th><th>回路地址</th><th>联动关系</th><th>批次状态</th><th>状态</th></tr></thead>
         <tbody>
           <tr v-for="device in filtered" :key="device.id">
             <td class="mono">{{ device.id }}</td>
@@ -44,6 +54,12 @@ function addDevice() {
             <td>{{ device.floor }} / {{ device.zone }}</td>
             <td class="mono">{{ device.address }}</td>
             <td>{{ store.rules.filter((rule) => rule.triggerId === device.id || rule.actionId === device.id).length }} 条</td>
+            <td>
+              <template v-if="deviceBatch(device.id)">
+                <v-chip size="x-small" :color="batchColor(deviceBatch(device.id)!.status)" variant="tonal">{{ deviceBatch(device.id)!.code }} · {{ deviceBatch(device.id)!.status }}</v-chip>
+              </template>
+              <span v-else class="muted">—</span>
+            </td>
             <td><v-chip size="small" color="success" variant="tonal">在线</v-chip></td>
           </tr>
         </tbody>
