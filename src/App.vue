@@ -13,6 +13,7 @@ const items = [
   { to: '/devices', title: '设备与分区', icon: 'mdi-access-point' },
   { to: '/matrix', title: '因果矩阵', icon: 'mdi-grid-large' },
   { to: '/dependency', title: '依赖图', icon: 'mdi-graph-outline' },
+  { to: '/offline', title: '离线批次', icon: 'mdi-cloud-sync-outline' },
   { to: '/review', title: '版本审阅', icon: 'mdi-file-compare' },
 ]
 </script>
@@ -39,7 +40,15 @@ const items = [
       <v-app-bar-nav-icon class="d-md-none" @click="drawer = !drawer" />
       <v-app-bar-title>{{ title }}</v-app-bar-title>
       <v-spacer />
-      <v-chip size="small" variant="tonal" color="success" prepend-icon="mdi-cloud-check-outline">草稿自动保存</v-chip>
+      <v-chip
+        size="small"
+        variant="tonal"
+        :color="store.online ? 'success' : 'error'"
+        :prepend-icon="store.online ? 'mdi-cloud-check-outline' : 'mdi-cloud-off-outline'"
+        class="mr-2"
+        @click="store.online = !store.online"
+      >{{ store.online ? '已回网' : '断网中' }}</v-chip>
+      <v-chip size="small" variant="tonal" color="success" prepend-icon="mdi-content-save-check-outline">草稿自动保存</v-chip>
     </v-app-bar>
 
     <v-main>

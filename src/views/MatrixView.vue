@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useLinkageStore } from '../stores/linkage'
+import { useLinkageStore, batchStatusColor } from '../stores/linkage'
 
 const store = useLinkageStore()
 const query = ref('')
@@ -46,7 +46,7 @@ const rows = computed(() => store.rules.filter((rule) => {
     <div class="panel table-wrap">
       <v-data-table v-model="selectedIds" :items="rows" item-value="id" show-select density="compact" :items-per-page="12">
         <thead>
-          <tr><th></th><th>规则</th><th>触发点位</th><th>动作点位</th><th>延时</th><th>互锁条件</th><th>优先级</th><th>抑制条件</th><th>启用</th><th>冲突</th></tr>
+          <tr><th></th><th>规则</th><th>触发点位</th><th>动作点位</th><th>延时</th><th>互锁条件</th><th>优先级</th><th>抑制条件</th><th>启用</th><th>冲突</th><th>批次</th></tr>
         </thead>
         <tbody>
           <tr v-for="rule in rows" :key="rule.id" :class="{ 'row-error': store.validations.some((item) => item.severity === '错误' && item.ruleIds.includes(rule.id)) }">
@@ -60,6 +60,21 @@ const rows = computed(() => store.rules.filter((rule) => {
             <td>{{ rule.suppression }}</td>
             <td><v-switch :model-value="rule.enabled" color="primary" hide-details density="compact" @update:model-value="store.updateRule(rule.id, { enabled: Boolean($event) })" /></td>
             <td><v-chip v-if="store.validations.some((item) => item.ruleIds.includes(rule.id))" size="x-small" color="error" variant="tonal">需处理</v-chip><span v-else class="muted">—</span></td>
+            <td>
+              <template v-if="store.batchesForRule(rule.id).length">
+                <v-chip
+                  v-for="batch in store.batchesForRule(rule.id).slice(0, 2)"
+                  :key="batch.id"
+                  size="x-small"
+                  :color="batchStatusColor(batch.status) || undefined"
+                  variant="tonal"
+                  class="mr-1"
+                  @click="$router.push('/offline')"
+                >{{ batch.id }} · {{ batch.status }}</v-chip>
+                <span v-if="store.batchesForRule(rule.id).length > 2" class="muted">+{{ store.batchesForRule(rule.id).length - 2 }}</span>
+              </template>
+              <span v-else class="muted">—</span>
+            </td>
           </tr>
         </tbody>
       </v-data-table>

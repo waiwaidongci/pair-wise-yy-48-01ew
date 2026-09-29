@@ -27,6 +27,7 @@ const vuetify = createVuetify({
           error: '#C53B2A',
           warning: '#D28A2D',
           success: '#39785F',
+          info: '#2C6E9B',
         },
       },
     },
